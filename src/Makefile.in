@@ -1,0 +1,50 @@
+SHELL = @SHELL@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datarootdir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+
+CC = @CC@
+
+CFLAGS = -O2 -g -Wall -Wno-pointer-sign -Wno-unused-result -DVCSI_LIB_DIR=\"${datadir}/vcsi/lib/\" -DVCSI_MOD_DIR=\"${datadir}/vcsi/modules/\"
+
+SOURCES = vcsi.c cont.c dynl.c env.c eval.c gc.c lex.c num.c obj.c port.c prim.c str.c sym.c vec.c net.c regexp.c thread.c srfi.c srfi-0.c srfi-1.c srfi-8.c srfi-28.c
+
+OBJS = vcsi.o cont.o dynl.o env.o eval.o gc.o lex.o num.o obj.o port.o prim.o str.o sym.o vec.o net.o regexp.o thread.o srfi.o srfi-0.o srfi-1.o srfi-8.o srfi-28.o
+
+HEADERS = vcsi.h srfi.h
+
+all: libvcsi.a vcsi
+
+vcsi:	main.o libvcsi.a
+	$(CC) @RDYNAMIC@ -o vcsi main.o libvcsi.a @LIBS@ @EXTRALIBS@
+
+libvcsi.a: ${OBJS} ${HEADERS}
+	ar cru libvcsi.a ${OBJS}
+	ranlib libvcsi.a
+
+install: vcsi
+	if test ! -d ${bindir}; then mkdir ${bindir}; fi
+	@INSTALL@ -m 755 vcsi ${bindir}/vcsi
+	if test ! -d ${libdir}; then mkdir ${libdir}; fi
+	@INSTALL@ -m 444 libvcsi.a ${libdir}/libvcsi.a
+	if test ! -d ${includedir}; then mkdir ${includedir}; fi
+	if test ! -d ${includedir}/vcsi; then mkdir ${includedir}/vcsi; fi
+	@INSTALL@ -m 444 *.h ${includedir}/vcsi/
+clean:
+	rm -f *.o *.a *.so *~ core vcsi

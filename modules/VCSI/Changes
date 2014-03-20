@@ -1,0 +1,8 @@
+Revision history for Perl extension VCSI.
+
+0.02  Thu Aug  8 13:56:24 EDT 2002
+        - updated for thread safe, context dependant version
+
+0.01  Thu Jul 27 16:02:26 2000
+	- original version; created by h2xs 1.19
+

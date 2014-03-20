@@ -1,0 +1,5 @@
+PASS test
+NICK strego_
+USER strego_ wunder-fire wunder-fire :strego
+
+PRIVMSG #xsnow :ACTION sasses

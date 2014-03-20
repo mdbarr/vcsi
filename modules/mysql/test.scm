@@ -1,0 +1,5 @@
+(dynamic-load "mysql")
+(define m (make-mysql))
+(mysql-connect m '() "root" '() "wiki")
+(mysql-query m "SELECT id,title from documents GROUP BY title")
+(mysql-fetch-row m)

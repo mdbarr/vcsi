@@ -1,0 +1,38 @@
+SHELL = @SHELL@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datarootdir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+
+VCSI_LIB_DIR = ${datadir}/vcsi/lib
+
+SCMS = srfi-0.scm srfi-1.scm srfi-8.scm
+
+all:
+
+clean:
+	rm -f *.o *.a *.so *~ core
+
+install:
+	if test ! -d ${datadir}/vcsi; then mkdir ${datadir}/vcsi; fi
+	if test ! -d ${VCSI_LIB_DIR}; then mkdir ${VCSI_LIB_DIR}; fi
+	 for f in $(SCMS); do \
+          @INSTALL@ -m 444 $$f $(VCSI_LIB_DIR)/$$f; \
+        done
+
+

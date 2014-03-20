@@ -1,0 +1,27 @@
+CC = @CC@
+
+PCFLAGS := $(shell makeflags.pl -c)
+CFLAGS =-O2 -fPIC -I../../src  -Dbool=char -DHAS_BOOL ${PCFLAGS}
+
+prefix = @prefix@
+datadir = @datarootdir@
+VCSI_MOD_DIR = @datarootdir@/vcsi/modules
+
+PLDFLAGS := $(shell makeflags.pl -l)
+LDFLAGS = -lperl ${PLDFLAGS}
+
+
+all: perl.so
+
+perl.so:	perl.o
+	${CC} -shared -fPIC ${PCFLAGS} -o perl.so perl.o ${LDFLAGS}
+
+perl.o:	perl.c 
+
+clean:
+	rm -f *.o *.a *.so *~ core
+
+install: perl.so
+	if test ! -d ${datadir}/vcsi; then mkdir ${datadir}/vcsi; fi
+	if test ! -d ${VCSI_MOD_DIR}; then mkdir ${VCSI_MOD_DIR}; fi
+	@INSTALL@ -m 444 perl.so $(VCSI_MOD_DIR)

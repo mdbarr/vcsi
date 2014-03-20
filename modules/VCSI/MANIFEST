@@ -1,0 +1,7 @@
+Changes
+MANIFEST
+Makefile.PL
+VCSI.pm
+VCSI.xs
+test.pl
+typemap
