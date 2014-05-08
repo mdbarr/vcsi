@@ -1,0 +1,38 @@
+SHELL = @SHELL@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datarootdir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+host = @HOST@
+target = @TARGET@
+
+all: 
+	cd src; make
+	cd lib; make
+	cd modules; make
+
+clean:
+	cd src; make clean
+	cd lib; make clean
+	cd modules; make clean
+
+
+install:
+	cd src; make install
+	cd lib; make install
+	cd modules; make install
