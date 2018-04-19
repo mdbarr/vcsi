@@ -1,7 +1,7 @@
 #include "vcsi.h"
 
 /* Global Variables */
-char* vcsi_version = "3.0.5";
+char* vcsi_version = "3.0.6";
 char* vcsi_build_date = __DATE__ ;
 char* vcsi_build_time = __TIME__ ;
 
