@@ -1,14 +1,14 @@
 #include "vcsi.h"
 
 /* Global Variables */
-char* vcsi_version = "3.0.4";
+char* vcsi_version = "3.0.5";
 char* vcsi_build_date = __DATE__ ;
 char* vcsi_build_time = __TIME__ ;
 
 int pmatchq(char* s) {
   int paren = 0;
   int i,l;
-  
+
   l = strlen(s);
 
   if(l == 0)
@@ -25,21 +25,21 @@ int pmatchq(char* s) {
     else if(s[i] == ')') {
       if(paren > 0)
 	paren--;
-      else 
+      else
 	break;
     } else if(s[i] == '"')
       for(i++;s[i] != '"' && i<l;i++) {
 	if(s[i] == '\\') /* escaped characters */
 	  i++;
 	/* no semicolon handling in strings */
-	/*else if(s[i] == ';') { 
+	/*else if(s[i] == ';') {
 	  s[i] = 0;
 	  i = l;
 	  break;
 	  }*/
       }
-	  
-  }      
+
+  }
 
   return (paren == 0) ? 1 : 0;
 }
@@ -66,7 +66,7 @@ int get_pmatch(VCSI_CONTEXT vc, FILE* f) {
 
     if(c == 10) {
       in_com = 0;
-	     
+
       if(vc->input->length > 0) {
 	if(in_paren <= 0)
 	  break;
@@ -93,10 +93,10 @@ int get_pmatch(VCSI_CONTEXT vc, FILE* f) {
     else if(c == ')' && !in_str && !esc) {
       if(in_paren > 0)
 	in_paren--;
-      else 
+      else
 	return 0;
     } else if(iscntrl(c) && !in_str)
-      c = ' '; 
+      c = ' ';
     if(esc && c != '\\')
       esc = 0;
 
@@ -140,7 +140,7 @@ void print_vcsi_object_size(VCSI_CONTEXT vc) {
 /* Print an Object and all embedded Objects */
 char* print_obj(VCSI_CONTEXT vc,
 		INFOSTD_DYN_STR result,
-		VCSI_OBJECT item, 
+		VCSI_OBJECT item,
 		int clear) {
 
   VCSI_OBJECT tmp;
@@ -148,13 +148,13 @@ char* print_obj(VCSI_CONTEXT vc,
   int i;
 
   infostd_dyn_str_clear(vc->res_extra);
-  
+
   if(clear)
     infostd_dyn_str_clear(result);
-  
+
   if(vc->got_error)
     item = vc->errobj;
-   
+
   switch TYPE(item) {
   case 0:
     infostd_dyn_str_strcat(result,"()");
@@ -192,21 +192,21 @@ char* print_obj(VCSI_CONTEXT vc,
   case STRING:
     infostd_dyn_str_addchar(vc->res_extra,'\"');
     for(l=0;l<SLEN(item);l++) {
-      if(STR(item)[l] == '\"' || STR(item)[l] == '\\') 
-	infostd_dyn_str_addchar(vc->res_extra,'\\');	
+      if(STR(item)[l] == '\"' || STR(item)[l] == '\\')
+	infostd_dyn_str_addchar(vc->res_extra,'\\');
       infostd_dyn_str_addchar(vc->res_extra,STR(item)[l]);
     }
     infostd_dyn_str_addchar(vc->res_extra,'\"');
     infostd_dyn_str_strcat(result,vc->res_extra->buff);
     break;
   case SYMBOL:
-    if(item == vc->specialobj) 
+    if(item == vc->specialobj)
       infostd_dyn_str_printf(vc->res_extra,"#[%s]",SNAME(item));
     else if(SCOPE(item) && 0) /* show different scoped vars */
       infostd_dyn_str_printf(vc->res_extra,"&%s",SNAME(item));
     else
       infostd_dyn_str_printf(vc->res_extra,"%s",SNAME(item));
-      
+
     infostd_dyn_str_strcat(result,vc->res_extra->buff);
     break;
   case PROC0:
@@ -307,12 +307,12 @@ char* print_obj(VCSI_CONTEXT vc,
     break;
 #endif
   case REGEXPN:
-    infostd_dyn_str_printf(vc->res_extra,"#[regexp %p]",item); 
+    infostd_dyn_str_printf(vc->res_extra,"#[regexp %p]",item);
     infostd_dyn_str_strcat(result,vc->res_extra->buff);
     break;
   case CONS:
     infostd_dyn_str_strcat(result,"(");
-    for(tmp=item;TYPEP(tmp,CONS);tmp=CDR(tmp)) {	    
+    for(tmp=item;TYPEP(tmp,CONS);tmp=CDR(tmp)) {
       print_obj(vc,result, CAR(tmp),0);
       if(CDR(tmp) != NULL)
 	infostd_dyn_str_strcat(result," ");
@@ -329,14 +329,14 @@ char* print_obj(VCSI_CONTEXT vc,
     break;
   case USERDEF:
     if(UDTYPE(item) == NULL) {
-      infostd_dyn_str_printf(vc->res_extra,"#[user-defined %p]",item); 
+      infostd_dyn_str_printf(vc->res_extra,"#[user-defined %p]",item);
       infostd_dyn_str_strcat(result,vc->res_extra->buff);
     } else {
       if(UDTYPE(item)->ud_print)
 	UDTYPE(item)->ud_print(vc,result,item);
       else {
 	infostd_dyn_str_printf(vc->res_extra,"#[user-defined %s]",
-			       UDTYPE(item)->name); 
+			       UDTYPE(item)->name);
 	infostd_dyn_str_strcat(result,vc->res_extra->buff);
       }
     }
@@ -349,7 +349,7 @@ char* print_obj(VCSI_CONTEXT vc,
   return result->buff;
 }
 
-VCSI_OBJECT load_file(VCSI_CONTEXT vc, 
+VCSI_OBJECT load_file(VCSI_CONTEXT vc,
 		      VCSI_OBJECT x) {
   FILE* fh;
   VCSI_OBJECT res;
@@ -386,11 +386,11 @@ VCSI_OBJECT load_file_handle(VCSI_CONTEXT vc,
 
   while(get_pmatch(vc,f) != EOF) {
     vc->got_error = 0;
-      
+
     if(!vc->input->length)
       continue;
 
-    if(!sigsetjmp(DYNERR(vc->root_wind),1)) {            
+    if(!sigsetjmp(DYNERR(vc->root_wind),1)) {
       tmp = eval(vc,parse_text(vc,vc->input->buff),DYNROOT(vc->root_wind));
     }
 
@@ -399,26 +399,26 @@ VCSI_OBJECT load_file_handle(VCSI_CONTEXT vc,
     if(errorq(vc,tmp))
       return vc->errobj;
   }
-  
+
   vcsi_context_free(vc);
 
   return tmp;
 }
 
-VCSI_OBJECT load_library_file(VCSI_CONTEXT vc, 
+VCSI_OBJECT load_library_file(VCSI_CONTEXT vc,
 			      char* str) {
   FILE* f;
   VCSI_OBJECT tmp = NULL;
   VCSI_OBJECT s2;
-   
-#ifdef VCSI_LIB_DIR  
+
+#ifdef VCSI_LIB_DIR
   infostd_dyn_str_strcpy(vc->tmpstr,VCSI_LIB_DIR);
   infostd_dyn_str_strcat(vc->tmpstr,str);
 #else
   infostd_dyn_str_strcpy(vc->tmpstr,"./lib/");
   infostd_dyn_str_strcat(vc->tmpstr,str);
 #endif
-   
+
   f = fopen(vc->tmpstr->buff,"r");
 
   if(f == NULL) {
@@ -432,14 +432,14 @@ VCSI_OBJECT load_library_file(VCSI_CONTEXT vc,
 
   while(get_pmatch(vc,f) != EOF) {
     vc->got_error = 0;
-      
+
     if(!vc->input->length)
       continue;
 
-    if(!sigsetjmp(DYNERR(vc->root_wind),1)) {            
+    if(!sigsetjmp(DYNERR(vc->root_wind),1)) {
       tmp = eval(vc,parse_text(vc,vc->input->buff),DYNROOT(vc->root_wind));
     }
-    
+
     infostd_dyn_str_clear(vc->input);
 
     if(errorq(vc,tmp)) {
@@ -456,8 +456,8 @@ VCSI_OBJECT load_library_file(VCSI_CONTEXT vc,
 }
 
 void check_arg_type(VCSI_CONTEXT vc,
-		    VCSI_OBJECT x, 
-		    VCSI_OBJECT_TYPE type, 
+		    VCSI_OBJECT x,
+		    VCSI_OBJECT_TYPE type,
 		    char* func_name) {
   char buf[256];
 
@@ -484,9 +484,9 @@ long get_free_length(VCSI_CONTEXT vc) {
   VCSI_OBJECT x;
   int count = 1;
 
-  /* Use the master context */  
+  /* Use the master context */
   vc=vcsi_context_find_master(vc);
-  
+
   for(x=vc->freeobj;TYPEP(x,FREED);x=CDR(x))
     count++;
   return count;
@@ -494,7 +494,7 @@ long get_free_length(VCSI_CONTEXT vc) {
 
 VCSI_OBJECT quit(VCSI_CONTEXT vc) {
   fprintf(PORTFP(vc->port_curr_out),"EOF\n");
-  
+
   /* Kill the whole context */
   vcsi_context_free(vc);
 
@@ -512,7 +512,7 @@ VCSI_OBJECT verbosity(VCSI_CONTEXT vc,
   if(x != vc->novalue) {
     lvl = x;
     check_arg_type(vc,lvl,LNGNUM,"verbosity");
-    
+
     vc->verbose = LNGN(lvl);
 
     if(vc->verbose < 0)
@@ -525,7 +525,7 @@ VCSI_OBJECT verbosity(VCSI_CONTEXT vc,
       vc->verbose = 1;
     else if(vc->verbose == 1)
       vc->verbose = 2;
-    else 
+    else
       vc->verbose = 0;
   }
 
@@ -558,12 +558,12 @@ VCSI_OBJECT gc_stats(VCSI_CONTEXT vc) {
   x = make_long(vc,0);
   y = make_long(vc,0);
   z = make_long(vc,0);
-  
+
 
   tmp1 = cons(vc,make_symbol(vc,"cells-allocated"),x);
 
   tmp2 = cons(vc,make_symbol(vc,"cells-collected"),y);
-  
+
   tmp3 = cons(vc,make_symbol(vc,"cells-available"),z);
 
   tmp4 = cons(vc,make_symbol(vc,"heap-size"),make_long(vc,vc->heap_size));
@@ -577,24 +577,24 @@ VCSI_OBJECT gc_stats(VCSI_CONTEXT vc) {
 
   return tmp;
 }
-			       
-		   
+
+
 /* VCSI_CONTEXT functions */
 VCSI_CONTEXT vcsi_init(unsigned long hs) {
   VCSI_OBJECT tmp;
 
-  VCSI_CONTEXT vc; 
-  
+  VCSI_CONTEXT vc;
+
   /* Create the context */
   vc = (VCSI_CONTEXT)MALLOC(SIZE_VCSI_CONTEXT);
   memset(vc,0,SIZE_VCSI_CONTEXT);
-  
+
   /* Set the type */
   vc->type = VCSI_CONTEXT_MASTER;
 
   /* No sub-contexts */
   vc->next = NULL;
-  
+
   /* Create Input and Output buffers */
   vc->input = infostd_dyn_str_init(1024);
   vc->result = infostd_dyn_str_init(1024);
@@ -642,7 +642,7 @@ VCSI_CONTEXT vcsi_init(unsigned long hs) {
    * to the current location */
   vc->heap_end = vc->heap + (vc->heap_size-1);
   vc->heap = vc->heap;
-  
+
   /* Setup the list of free objects */
   for(tmp=vc->heap;tmp<vc->heap_end;tmp++) {
     tmp->type = FREED;
@@ -651,7 +651,7 @@ VCSI_CONTEXT vcsi_init(unsigned long hs) {
   vc->heap_end->type = FREED;
   CDR(vc->heap_end) = NULL;
   vc->freeobj = vc->heap;
-   
+
   /* Now setup our root of the wind chain */
   vc->root_wind = (VCSI_DYNWIND)MALLOC(SIZE_VCSI_DYNWIND);
   memset(vc->root_wind,0,SIZE_VCSI_DYNWIND);
@@ -674,21 +674,21 @@ VCSI_CONTEXT vcsi_init(unsigned long hs) {
   BOOL(vc->false)=0;
 
   /* Create Protected Objects */
-  vc->elseobj = make_protected("else"); 
-  vc->unbound = make_protected("#[unbound symbol]"); 
+  vc->elseobj = make_protected("else");
+  vc->unbound = make_protected("#[unbound symbol]");
   vc->novalue = make_protected("#[unspecified]");
   vc->unquote = make_protected("unquote");
   vc->unquotespl = make_protected("unquote-splicing");
   vc->specialobj = make_protected("special form");
   vc->syntax_rules = make_protected("syntax-rules");
   vc->elipsis = make_protected("...");
-  
+
   /* Initialize all core functions */
   set_int_proc(vc,"eval",PROC2,do_eval);
   set_int_proc(vc,"scheme-report-environment",PROC1,get_rep_env);
   set_int_proc(vc,"null-environment",PROC1,get_rep_env);
   set_int_proc(vc,"interaction-environment",PROCENV,get_int_env);
-   
+
   set_int_proc(vc,"cons",PROC2,cons);
   set_int_proc(vc,"car",PROC1,car);
   set_int_proc(vc,"cdr",PROC1,cdr);
@@ -710,7 +710,7 @@ VCSI_CONTEXT vcsi_init(unsigned long hs) {
   set_int_proc(vc,"cadadr",PROC1,cadadr);
   set_int_proc(vc,"cdaddr",PROC1,cdaddr);
   set_int_proc(vc,"caaddr",PROC1,caaddr);
-  set_int_proc(vc,"cdddar",PROC1,cdddar); 
+  set_int_proc(vc,"cdddar",PROC1,cdddar);
   set_int_proc(vc,"caddar",PROC1,caddar);
   set_int_proc(vc,"cddaar",PROC1,cddaar);
   set_int_proc(vc,"cadaar",PROC1,cadaar);
@@ -748,29 +748,29 @@ VCSI_CONTEXT vcsi_init(unsigned long hs) {
   set_int_proc(vc,"map",PROCENV,eval_map);
   set_int_proc(vc,"for-each",PROCENV,eval_foreach);
   set_int_proc(vc,"apply",PROCENV,eval_apply);
-   
+
   set_int_proc(vc,"delay",PROCENV,eval_delay);
   set_int_proc(vc,"force",PROC1,eval_force);
-   
+
 
   vc->ifobj = make_special(vc,"if");
   vc->condobj = make_special(vc,"cond");
   vc->andobj = make_special(vc,"and");
   vc->orobj = make_special(vc,"or");
   set_int_proc(vc,"not",PROC1,eval_not);
-   
+
   set_int_proc(vc,"memq",PROC2,memq);
   set_int_proc(vc,"memv",PROC2,memq);
   set_int_proc(vc,"member",PROC2,member);
-  
+
   set_int_proc(vc,"equal?",PROC2,equal);
   set_int_proc(vc,"eq?",PROC2,eqv);
   set_int_proc(vc,"eqv?",PROC2,eqv);
-   
+
   set_int_proc(vc,"assq",PROC2,assq);
   set_int_proc(vc,"assv",PROC2,assq);
   set_int_proc(vc,"assoc",PROC2,assoc);
-   
+
   set_int_proc(vc,"cmp",PROC2,obj_compare);
 
   set_int_proc(vc,"pair?",PROC1,pairq);
@@ -778,20 +778,20 @@ VCSI_CONTEXT vcsi_init(unsigned long hs) {
   set_int_proc(vc,"boolean?",PROC1,booleanq);
   set_int_proc(vc,"procedure?",PROC1,procq);
   set_int_proc(vc,"list?",PROC1,listq);
-   
+
   set_int_proc(vc,"set!",PROCENV,eval_set);
   set_int_proc(vc,"set-car!",PROCENV,eval_setcar);
   set_int_proc(vc,"set-cdr!",PROCENV,eval_setcdr);
-   
+
   set_int_proc(vc,"length",PROC1,vcsi_list_length);
   set_int_proc(vc,"reverse",PROC1,vcsi_list_reverse);
   set_int_proc(vc,"append",PROC2,vcsi_list_append);
 
   set_int_proc(vc,"load",PROC1,load_file);
-      
+
   vc->errobj = make_internal(vc,"errobj");
   vc->got_error = 0;
-   
+
   cont_init(vc);
   sym_init(vc);
   str_init(vc);
@@ -817,7 +817,7 @@ VCSI_CONTEXT vcsi_init(unsigned long hs) {
   set_int_proc(vc,"gc-stats",PROC0,gc_stats);
   set_int_proc(vc,"trace",PROC1,clstrace);
   set_int_proc(vc,"untrace",PROC1,clsuntrace);
-  
+
   set_int_proc(vc,"sort",PROC1,obj_sort);
 
   /* Hashing functions */
@@ -827,7 +827,7 @@ VCSI_CONTEXT vcsi_init(unsigned long hs) {
   set_int_proc(vc,"hash-lookup",PROC2,hash_lookup);
   set_int_proc(vc,"hash-delete",PROC2,hash_delete);
   set_int_proc(vc,"hash-keys",PROC1,hash_keys);
-  
+
   /* Load custom libraries */
 #ifdef WITH_DYNAMIC_LOAD
   dynl_init(vc);
@@ -893,7 +893,7 @@ VCSI_CONTEXT vcsi_clone_context(VCSI_CONTEXT vc) {
   vn->next = vc;
 
   /* Create a new Dynamic Wind */
-  vn->root_wind = (VCSI_DYNWIND)MALLOC(SIZE_VCSI_DYNWIND);  
+  vn->root_wind = (VCSI_DYNWIND)MALLOC(SIZE_VCSI_DYNWIND);
   memset(vn->root_wind,0,SIZE_VCSI_DYNWIND);
 
   /* Clone the old Wind */
@@ -938,7 +938,7 @@ void vcsi_context_free(VCSI_CONTEXT vc) {
 #ifdef WITH_THREADS
   VCSI_THREAD tmp;
 #endif
-  
+
   if(!vc)
     return;
 
@@ -962,11 +962,11 @@ void vcsi_context_free(VCSI_CONTEXT vc) {
     while(vc->thread_list) {
       tmp = vc->thread_list;
       vc->thread_list = tmp->next;
-      
+
       /* Kill the thread if it is running */
       if(tmp->status != VCSI_THREAD_DONE)
 	pthread_kill(*tmp->thread,SIGKILL);
-      
+
       /* Free the thread */
       thread_free(tmp);
     }
@@ -980,7 +980,7 @@ void vcsi_context_free(VCSI_CONTEXT vc) {
 
     /* Free the heap */
     FREE(vc->heap);
-    
+
     /* Free the Wind */
     FREE(vc->root_wind);
 
@@ -1034,7 +1034,7 @@ void vcsi_context_free(VCSI_CONTEXT vc) {
 #endif
 
   }
-  
+
   /* Free the Context */
   FREE(vc);
 }
@@ -1074,10 +1074,10 @@ char* rep(VCSI_CONTEXT vc,
   } else {
     tmp = print_obj(vc,vc->result,vc->errobj,1);
   }
-  
+
   gettimeofday(&t2,&tz);
-  
-  vc->secs = (t2.tv_sec - t1.tv_sec) + (float)(t2.tv_usec - t1.tv_usec) / 
+
+  vc->secs = (t2.tv_sec - t1.tv_sec) + (float)(t2.tv_usec - t1.tv_usec) /
     (float)1000000;
 
   if(vc->verbose > 1) {

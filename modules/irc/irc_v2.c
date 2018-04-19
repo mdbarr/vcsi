@@ -1,4 +1,4 @@
-#include <vcsi/vcsi.h>
+#include <vcsi.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <errno.h>
@@ -19,7 +19,7 @@ IRC_EVENT parse_event(char* etext) {
   int len, i, dtype;
 
   nick = host = type = target = target2 = text = NULL;
-  
+
   irce = MALLOC(SIZE_IRC_EVENT);
   memset(irce,0,SIZE_IRC_EVENT);
 
@@ -32,21 +32,21 @@ IRC_EVENT parse_event(char* etext) {
     if(etext[len-1] == '\r' || etext[len-1] == '\n')
       etext[len-1] = '\0';
   }
-  
+
   if(etext[0] == ':') {
     nick = etext; /* get the nick */
     nick++;
-    
+
     type = strchr(nick,' '); /* get the type */
     if(type) {
       *type='\0';
       type++;
-      
+
       target = strchr(type,' '); /* get the target */
       if(target) {
 	*target='\0';
 	target++;
-	
+
 	if(*target==':') {
 	  text=target;
 	  text++;
@@ -54,7 +54,7 @@ IRC_EVENT parse_event(char* etext) {
 
 	} else {
 	  text = strchr(target,' ');
-	  
+
 	  if(text) {
 	    *text='\0';
 	    text++;
@@ -72,21 +72,21 @@ IRC_EVENT parse_event(char* etext) {
 		if(*text==':')
 		  text++;
 	      }
-	      
+
 	    }
 	  }
 	}
       }
     }
-    
-    if(nick && (host=strchr(nick,'!'))) {    
+
+    if(nick && (host=strchr(nick,'!'))) {
       *host='\0';
       host++;
     } else {
       host=nick;
       nick=NULL;
     }
-    
+
     /* Did the text come though as the second target? */
     if(!text) {
       if(target2) {
@@ -113,29 +113,29 @@ IRC_EVENT parse_event(char* etext) {
 
     if(!strcmp(type,"001")) { /* connect */
       irce->type = CONNECT;
-      
+
       if(target)
 	strncpy(irce->target,target,128);
       if(nick)
-	strncpy(irce->nick,nick,128);	
+	strncpy(irce->nick,nick,128);
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(text)
-	strncpy(irce->text,text,128);	
+	strncpy(irce->text,text,128);
 
     } else if(!strcmp(type,"PRIVMSG")) { /* message */
       if(*target=='#') { /* public */
 	irce->type = PUBLIC;
-	strncpy(irce->channel,target,128);	
+	strncpy(irce->channel,target,128);
       } else  /* private */
 	irce->type = MSG;
-      
+
       if(target)
-	strncpy(irce->target,target,128);	
+	strncpy(irce->target,target,128);
       if(nick)
 	strncpy(irce->nick,nick,128);
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
 
       if(*text==1) { /* CTCP something */
 	text++;
@@ -155,7 +155,7 @@ IRC_EVENT parse_event(char* etext) {
 	} else
 	  irce->type = CTCP;
       }
-      
+
       strncpy(irce->text,text,1023);
     } else if(!strcmp(type,"NOTICE")) { /* someone notices */
       irce->type = NOTICE;
@@ -163,20 +163,20 @@ IRC_EVENT parse_event(char* etext) {
       if(target)
 	strncpy(irce->target,target,128);
       if(nick)
-	strncpy(irce->nick,nick,128);	
+	strncpy(irce->nick,nick,128);
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(text)
-	strncpy(irce->text,text,128);	
+	strncpy(irce->text,text,128);
     } else if(!strcmp(type,"JOIN")) { /* someone joins */
       irce->type = JOIN;
 
       if(nick)
-	strncpy(irce->nick,nick,128);	
+	strncpy(irce->nick,nick,128);
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(text)
-	strncpy(irce->channel,text,128);	
+	strncpy(irce->channel,text,128);
 
     } else if(!strcmp(type,"PART")) { /* someone parts */
       irce->type = PART;
@@ -188,162 +188,162 @@ IRC_EVENT parse_event(char* etext) {
       sleep(5);
       */
       if(nick)
-	strncpy(irce->nick,nick,128);	
+	strncpy(irce->nick,nick,128);
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(target)
-	strncpy(irce->channel,target,128);	
+	strncpy(irce->channel,target,128);
 
     } else if(!strcmp(type,"QUIT")) { /* someone quits */
       irce->type = QUIT;
 
       if(nick)
-	strncpy(irce->nick,nick,128);	
+	strncpy(irce->nick,nick,128);
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(text)
-	strncpy(irce->text,text,1023);	
+	strncpy(irce->text,text,1023);
 
     } else if(!strcmp(type,"NICK")) { /* nick change */
       irce->type = NICK_CHANGE;
 
       if(nick)
-	strncpy(irce->nick,nick,128);	
+	strncpy(irce->nick,nick,128);
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(text)
-	strncpy(irce->text,text,1023);	
+	strncpy(irce->text,text,1023);
     } else if(!strcmp(type,"PONG")) {
       irce->type = PONG;
 
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(target)
-	strncpy(irce->channel,target,128);	
+	strncpy(irce->channel,target,128);
       if(text)
-	strncpy(irce->text,text,1023);	
+	strncpy(irce->text,text,1023);
     } else if(!strcmp(type,"PING")) {
       irce->type = PING;
 
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(target)
-	strncpy(irce->channel,target,128);	
+	strncpy(irce->channel,target,128);
       if(text)
-	strncpy(irce->text,text,1023);	
+	strncpy(irce->text,text,1023);
     } else if(!strcmp(type,"433")) { /* nick already taken */
       irce->type = NICK_TAKEN;
 
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(target2)
-	strncpy(irce->target,target2,128);	
+	strncpy(irce->target,target2,128);
       if(text)
-	strncpy(irce->text,text,1023);	
+	strncpy(irce->text,text,1023);
 
     } else if(!strcmp(type,"KICK")) { /* when someone is kicked */
       irce->type = KICK;
 
       if(nick)
-	strncpy(irce->nick,nick,128);	
+	strncpy(irce->nick,nick,128);
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(target)
-	strncpy(irce->channel,target,128);	
+	strncpy(irce->channel,target,128);
       if(target2)
-	strncpy(irce->target,target2,128);	
+	strncpy(irce->target,target2,128);
       if(text)
-	strncpy(irce->text,text,1023);	
+	strncpy(irce->text,text,1023);
 
     } else if(!strcmp(type,"353")) { /* result of names command */
       irce->type = NAMES;
 
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(target2)
-	strncpy(irce->channel,target2,128);	
+	strncpy(irce->channel,target2,128);
       if(text)
-	strncpy(irce->text,text,1023);	
+	strncpy(irce->text,text,1023);
 
     } else if(!strcmp(type,"TOPIC")) {
       /* result of setting the topic */
       irce->type = TOPIC;
 
       if(nick)
-	strncpy(irce->nick,nick,128);	
+	strncpy(irce->nick,nick,128);
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(target)
-	strncpy(irce->channel,target,128);	
+	strncpy(irce->channel,target,128);
       if(text)
-	strncpy(irce->text,text,1023);	
+	strncpy(irce->text,text,1023);
 
-    } else if(!strcmp(type,"332")) { 
+    } else if(!strcmp(type,"332")) {
       /* result of getting the topic */
       irce->type = TOPIC;
 
       if(nick)
-	strncpy(irce->nick,nick,128);	
+	strncpy(irce->nick,nick,128);
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(target2)
-	strncpy(irce->channel,target2,128);	
+	strncpy(irce->channel,target2,128);
       if(text)
-	strncpy(irce->text,text,1023);	    
-    } else if(!strcmp(type,"333")) { 
+	strncpy(irce->text,text,1023);
+    } else if(!strcmp(type,"333")) {
       /* result of getting the topic - who set it */
       irce->type = TOPIC_WHO;
 
       if(nick)
-	strncpy(irce->nick,nick,128);	
+	strncpy(irce->nick,nick,128);
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(target)
-	strncpy(irce->target,target,128);	
+	strncpy(irce->target,target,128);
       if(target2)
-	strncpy(irce->channel,target2,128);	
+	strncpy(irce->channel,target2,128);
       if(text)
-	strncpy(irce->text,text,1023);	    
-    } else if(!strcmp(type,"301")) { 
+	strncpy(irce->text,text,1023);
+    } else if(!strcmp(type,"301")) {
       /* A user is away */
       irce->type = IS_AWAY;
 
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(target2)
-	strncpy(irce->target,target2,128);	
+	strncpy(irce->target,target2,128);
       if(text)
-	strncpy(irce->text,text,1023);	
-    } else if(!strcmp(type,"303")) { 
+	strncpy(irce->text,text,1023);
+    } else if(!strcmp(type,"303")) {
       /* We are now back */
       irce->type = ISON;
 
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(target2)
-	strncpy(irce->target,target2,128);	
+	strncpy(irce->target,target2,128);
       if(text)
-	strncpy(irce->text,text,1023);	
-    } else if(!strcmp(type,"305")) { 
+	strncpy(irce->text,text,1023);
+    } else if(!strcmp(type,"305")) {
       /* We are now back */
       irce->type = BACK;
 
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(target2)
-	strncpy(irce->target,target2,128);	
+	strncpy(irce->target,target2,128);
       if(text)
-	strncpy(irce->text,text,1023);	
-    } else if(!strcmp(type,"306")) { 
+	strncpy(irce->text,text,1023);
+    } else if(!strcmp(type,"306")) {
       /* We are now away */
       irce->type = AWAY;
 
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(target2)
-	strncpy(irce->target,target2,128);	
+	strncpy(irce->target,target2,128);
       if(text)
-	strncpy(irce->text,text,1023);	
+	strncpy(irce->text,text,1023);
     } else if(!strcmp(type,"365") || !strcmp(type,"366") ||
 	      !strcmp(type,"368") || !strcmp(type,"374") ||
 	      !strcmp(type,"376") || !strcmp(type,"394")) {
@@ -355,37 +355,37 @@ IRC_EVENT parse_event(char* etext) {
       irce->type = ERROR;
 
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(target2)
-	strncpy(irce->target,target2,128);	
+	strncpy(irce->target,target2,128);
       if(text)
-	strncpy(irce->text,text,1023);	
+	strncpy(irce->text,text,1023);
 
     } else if(dtype >= 200 && dtype <= 600) {
       /* Numeric reply of some kind */
       irce->type = SYSTEM;
 
       if(nick)
-	strncpy(irce->nick,nick,128);	
+	strncpy(irce->nick,nick,128);
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(target)
-	strncpy(irce->target,target,128);	
+	strncpy(irce->target,target,128);
 
       if(text)
 	//snprintf(irce->text,1023,"IRC(%d) %s",dtype,text);
 	snprintf(irce->text,1023,"[%3.3d] %s",dtype, text);
       else
-	snprintf(irce->text,1023,"IRC(%d)",dtype);	
+	snprintf(irce->text,1023,"IRC(%d)",dtype);
     } else { /* assume general notice */
       irce->type = SYSTEM;
 
       if(nick)
-	strncpy(irce->nick,nick,128);	
+	strncpy(irce->nick,nick,128);
       if(host)
-	strncpy(irce->host,host,128);	
+	strncpy(irce->host,host,128);
       if(target)
-	strncpy(irce->target,target,128);	
+	strncpy(irce->target,target,128);
       if(text)
 	strncpy(irce->text,text,1023);
     }
@@ -410,8 +410,8 @@ IRC_EVENT parse_event(char* etext) {
       irce->type = PING;
       strncpy(irce->host,text,128);
     } else {
-      irce->type = SYSTEM;    
-      
+      irce->type = SYSTEM;
+
       strncpy(irce->text,text,1023);
     }
   }
@@ -424,19 +424,19 @@ IRC_EVENT parse_event(char* etext) {
   return irce;
 }
 
-VCSI_OBJECT handle_ping_event(VCSI_CONTEXT vc, 
-			      IRC_CONN ircc, 
+VCSI_OBJECT handle_ping_event(VCSI_CONTEXT vc,
+			      IRC_CONN ircc,
 			      IRC_EVENT irce) {
-  
+
   if(!ircc->connected)
     return vc->false;
-  
+
   memset(ircc->send_buf,0,IRCBUF);
-  
+
   snprintf(ircc->send_buf,IRCBUF,"PONG :%s\n",irce->host);
-  
+
   send(ircc->skt,ircc->send_buf,strlen(ircc->send_buf),0);
-  
+
   //printf("DEBUG: I PONG'd\n");
 
   return vc->true;
@@ -453,8 +453,8 @@ int irc_raw_ping(IRC_CONN ircc) {
   return 0;
 }
 
-VCSI_OBJECT handle_event(VCSI_CONTEXT vc, 
-			 IRC_CONN ircc, 
+VCSI_OBJECT handle_event(VCSI_CONTEXT vc,
+			 IRC_CONN ircc,
 			 IRC_EVENT irce) {
 
   VCSI_OBJECT res, func, vars, vals;
@@ -555,7 +555,7 @@ VCSI_OBJECT handle_event(VCSI_CONTEXT vc,
   default:
     res = vc->false; /* not an event we understand */;
   }
-  
+
   // Evaluate the associated handler, if it exists
   if(func) {
 
@@ -564,21 +564,21 @@ VCSI_OBJECT handle_event(VCSI_CONTEXT vc,
 
     if(strlen(irce->target))
       target = make_raw_string(vc,irce->target);
-    
+
     if(strlen(irce->nick))
       nick = make_raw_string(vc,irce->nick);
-    
+
     if(strlen(irce->host))
       host = make_raw_string(vc,irce->host);
-    
+
     if(strlen(irce->text))
       text = make_raw_string(vc,irce->text);
-    
+
     func = make_list(vc,6,func,channel,target,nick,host,text);
 
     // Error fallback context should be set
     res=eval(vc,func,vc->the_global_env);
-  }     
+  }
 
   // Handle the connect event and then jump back to output the system msg
   if(irce->type == CONNECT) {
@@ -593,7 +593,7 @@ VCSI_OBJECT handle_event(VCSI_CONTEXT vc,
     irc_status_push(ircc,STATUS_BACK);
   } else if(irce->type == AWAY) {
     irc_status_push(ircc,STATUS_AWAY);
-  } 
+  }
 
   if(strcasecmp(irce->nick,ircc->nick) == 0) {
     //fprintf(stderr,"-- %s %s\n",irce->nick,ircc->nick);
@@ -607,10 +607,10 @@ VCSI_OBJECT handle_event(VCSI_CONTEXT vc,
 
     case PART:
       irc_status_push(ircc,STATUS_PARTED);
-      break;      
+      break;
 
     case NICK_CHANGE:
-      strncpy(ircc->nick,irce->text,30);  
+      strncpy(ircc->nick,irce->text,30);
       irc_status_push(ircc,STATUS_NICK_CHANGED);
       break;
 
@@ -642,15 +642,15 @@ void fake_event(VCSI_CONTEXT vc,
   irce->type = type;
 
   if(channel)
-    strncpy(irce->channel,channel,128);	
+    strncpy(irce->channel,channel,128);
   if(target)
-    strncpy(irce->target,target,128);	
+    strncpy(irce->target,target,128);
   if(source)
-    strncpy(irce->nick,source,128);	
+    strncpy(irce->nick,source,128);
   if(hostmask)
-    strncpy(irce->host,hostmask,128);	
+    strncpy(irce->host,hostmask,128);
   if(text)
-    strncpy(irce->text,text,1023);	
+    strncpy(irce->text,text,1023);
 
   handle_event(vc,ircc,irce);
 
@@ -669,18 +669,18 @@ void irc_status_push(IRC_CONN ircc, IRC_STATUS s) {
 }
 
 ///////////////////////////////////////////////////////////////////////////
-// IRC Functions 
+// IRC Functions
 
-VCSI_OBJECT init_irc_conn(VCSI_CONTEXT vc, 
-			  VCSI_OBJECT server, 
+VCSI_OBJECT init_irc_conn(VCSI_CONTEXT vc,
+			  VCSI_OBJECT server,
 			  VCSI_OBJECT port,
-			  VCSI_OBJECT nick, 
+			  VCSI_OBJECT nick,
 			  VCSI_OBJECT name) {
-  
+
   IRC_CONN ircc = NULL;
   VCSI_OBJECT tmp;
   time_t clock;
-  
+
   check_arg_type(vc,server,STRING,"make-irc");
   check_arg_type(vc,port,LNGNUM,"make-irc");
   check_arg_type(vc,nick,STRING,"make-irc");
@@ -692,7 +692,7 @@ VCSI_OBJECT init_irc_conn(VCSI_CONTEXT vc,
 
   strncpy(ircc->server,STR(server),128);
   ircc->port = LNGN(port);
-  
+
   strncpy(ircc->nick,STR(nick),30);
   strncpy(ircc->name,STR(name),128);
 
@@ -706,40 +706,40 @@ VCSI_OBJECT init_irc_conn(VCSI_CONTEXT vc,
   ircc->squeue = infostd_cqueue_init(100);
 
   tmp = make_user_def(vc,(void*)ircc,irc_conn_type);
-  
+
   return tmp;
 }
 
-VCSI_OBJECT connect_irc_conn(VCSI_CONTEXT vc, 
+VCSI_OBJECT connect_irc_conn(VCSI_CONTEXT vc,
 			     VCSI_OBJECT x) {
 
   int s, len;
   struct hostent *hp;
   struct sockaddr_in name;
-  
+
   if(!same_type_user_def(vc,x,irc_conn_type))
     error(vc,"objected passed to irc-connect is of the wrong type",x);
-  
+
 #ifdef WITH_IRC_SECURE
   if(IRCC(x)->secure_mode)
     return error(vc,"irc security is enabled",x);
-#endif  
+#endif
 
   if((hp = gethostbyname(IRCC(x)->server)) == NULL)
     return error(vc,"unknown host",make_raw_string(vc,IRCC(x)->server));
-  
+
   if((s = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     return error(vc,"unable to create socket",make_raw_string(vc,IRCC(x)->server));
-  
+
   memset(&name, 0, sizeof(struct sockaddr_in));
   name.sin_family = AF_INET;
   name.sin_port = htons(IRCC(x)->port);
   memcpy(&name.sin_addr, hp->h_addr_list[0], hp->h_length);
   len = sizeof(struct sockaddr_in);
-  
+
   if(connect(s, (struct sockaddr *) &name, len) < 0)
     return error(vc,"connection refused",make_raw_string(vc,IRCC(x)->server));
-  
+
   IRCC(x)->skt = s;
 
   /* send the nick */
@@ -758,35 +758,35 @@ VCSI_OBJECT connect_irc_conn(VCSI_CONTEXT vc,
   send(IRCC(x)->skt,IRCC(x)->send_buf,strlen(IRCC(x)->send_buf),0);
 
   IRCC(x)->connected = 1;
-       
+
   return vc->true;
 }
 
-VCSI_OBJECT disconnect_irc_conn(VCSI_CONTEXT vc, 
+VCSI_OBJECT disconnect_irc_conn(VCSI_CONTEXT vc,
 				VCSI_OBJECT x) {
 
   int s, len;
   struct hostent *hp;
   struct sockaddr_in name;
-  
+
   if(!same_type_user_def(vc,x,irc_conn_type))
     error(vc,"objected passed to irc-connect is of the wrong type",x);
 
-#ifdef WITH_IRC_SECURE  
+#ifdef WITH_IRC_SECURE
   if(IRCC(x)->secure_mode)
     return error(vc,"irc security is enabled",x);
 #endif
 
   if(!IRCC(x)->connected)
     return vc->true;
-  
+
   close(IRCC(x)->skt);
   IRCC(x)->connected=0;
-  
+
   return vc->true;
 }
 
-VCSI_OBJECT enable_status_queue_irc_conn(VCSI_CONTEXT vc, 
+VCSI_OBJECT enable_status_queue_irc_conn(VCSI_CONTEXT vc,
 					 VCSI_OBJECT x) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
@@ -797,7 +797,7 @@ VCSI_OBJECT enable_status_queue_irc_conn(VCSI_CONTEXT vc,
   return vc->true;
 }
 
-VCSI_OBJECT disable_status_queue_irc_conn(VCSI_CONTEXT vc, 
+VCSI_OBJECT disable_status_queue_irc_conn(VCSI_CONTEXT vc,
 					  VCSI_OBJECT x) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
@@ -808,11 +808,11 @@ VCSI_OBJECT disable_status_queue_irc_conn(VCSI_CONTEXT vc,
   return vc->true;
 }
 
-VCSI_OBJECT pop_status_queue_irc_conn(VCSI_CONTEXT vc, 
+VCSI_OBJECT pop_status_queue_irc_conn(VCSI_CONTEXT vc,
 				      VCSI_OBJECT x) {
 
   IRC_STATUS i;
-  
+
   if(!same_type_user_def(vc,x,irc_conn_type))
     error(vc,"objected passed to irc-connect is of the wrong type",x);
 
@@ -845,14 +845,14 @@ VCSI_OBJECT pop_status_queue_irc_conn(VCSI_CONTEXT vc,
     break;
   default:
     return make_symbol(vc,"none");
-    break;    
+    break;
   }
   return vc->false;
 }
 
 #ifdef WITH_IRC_SECURE
-VCSI_OBJECT secure_irc_conn(VCSI_CONTEXT vc, 
-			    VCSI_OBJECT x, 
+VCSI_OBJECT secure_irc_conn(VCSI_CONTEXT vc,
+			    VCSI_OBJECT x,
 			    VCSI_OBJECT y) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
@@ -869,8 +869,8 @@ VCSI_OBJECT secure_irc_conn(VCSI_CONTEXT vc,
   return vc->true;
 }
 
-VCSI_OBJECT unsecure_irc_conn(VCSI_CONTEXT vc, 
-			      VCSI_OBJECT x, 
+VCSI_OBJECT unsecure_irc_conn(VCSI_CONTEXT vc,
+			      VCSI_OBJECT x,
 			      VCSI_OBJECT y) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
@@ -882,13 +882,13 @@ VCSI_OBJECT unsecure_irc_conn(VCSI_CONTEXT vc,
     IRCC(x)->secure_mode = 0;
     return vc->true;
   }
-  
+
   return vc->false;
 }
 #endif
 
-VCSI_OBJECT raw_irc_conn(VCSI_CONTEXT vc, 
-			 VCSI_OBJECT x, 
+VCSI_OBJECT raw_irc_conn(VCSI_CONTEXT vc,
+			 VCSI_OBJECT x,
 			 VCSI_OBJECT y) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
@@ -896,7 +896,7 @@ VCSI_OBJECT raw_irc_conn(VCSI_CONTEXT vc,
 
   if(!IRCC(x)->connected)
     error(vc,"not connected",x);
-  
+
   check_arg_type(vc,y,STRING,"irc-raw");
 
 #ifdef WITH_IRC_SECURE
@@ -914,8 +914,8 @@ VCSI_OBJECT raw_irc_conn(VCSI_CONTEXT vc,
   return vc->true;
 }
 
-VCSI_OBJECT quit_irc_conn(VCSI_CONTEXT vc, 
-			  VCSI_OBJECT x, 
+VCSI_OBJECT quit_irc_conn(VCSI_CONTEXT vc,
+			  VCSI_OBJECT x,
 			  VCSI_OBJECT y) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
@@ -923,7 +923,7 @@ VCSI_OBJECT quit_irc_conn(VCSI_CONTEXT vc,
 
   if(!IRCC(x)->connected)
     error(vc,"not connected",x);
-  
+
   check_arg_type(vc,y,STRING,"irc-quit");
 
 #ifdef WITH_IRC_SECURE
@@ -944,8 +944,8 @@ VCSI_OBJECT quit_irc_conn(VCSI_CONTEXT vc,
   return vc->true;
 }
 
-VCSI_OBJECT join_irc_conn(VCSI_CONTEXT vc, 
-			  VCSI_OBJECT x, 
+VCSI_OBJECT join_irc_conn(VCSI_CONTEXT vc,
+			  VCSI_OBJECT x,
 			  VCSI_OBJECT y) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
@@ -953,7 +953,7 @@ VCSI_OBJECT join_irc_conn(VCSI_CONTEXT vc,
 
   if(!IRCC(x)->connected)
     error(vc,"not connected",x);
-  
+
   check_arg_type(vc,y,STRING,"irc-join");
 
 #ifdef WITH_IRC_SECURE
@@ -971,8 +971,8 @@ VCSI_OBJECT join_irc_conn(VCSI_CONTEXT vc,
   return vc->true;
 }
 
-VCSI_OBJECT part_irc_conn(VCSI_CONTEXT vc, 
-			  VCSI_OBJECT x, 
+VCSI_OBJECT part_irc_conn(VCSI_CONTEXT vc,
+			  VCSI_OBJECT x,
 			  VCSI_OBJECT y) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
@@ -980,7 +980,7 @@ VCSI_OBJECT part_irc_conn(VCSI_CONTEXT vc,
 
   if(!IRCC(x)->connected)
     error(vc,"not connected",x);
-  
+
   check_arg_type(vc,y,STRING,"irc-part");
 
 #ifdef WITH_IRC_SECURE
@@ -998,8 +998,8 @@ VCSI_OBJECT part_irc_conn(VCSI_CONTEXT vc,
   return vc->true;
 }
 
-VCSI_OBJECT nick_irc_conn(VCSI_CONTEXT vc, 
-			  VCSI_OBJECT x, 
+VCSI_OBJECT nick_irc_conn(VCSI_CONTEXT vc,
+			  VCSI_OBJECT x,
 			  VCSI_OBJECT y) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
@@ -1025,7 +1025,7 @@ VCSI_OBJECT nick_irc_conn(VCSI_CONTEXT vc,
   snprintf(IRCC(x)->send_buf,IRCBUF,"NICK %s\n",STR(y));
 
   send(IRCC(x)->skt,IRCC(x)->send_buf,strlen(IRCC(x)->send_buf),0);
-  
+
   strncpy(IRCC(x)->nick,STR(y),30);
 
   irc_status_push(IRCC(x),STATUS_NICK_CHANGED);
@@ -1033,9 +1033,9 @@ VCSI_OBJECT nick_irc_conn(VCSI_CONTEXT vc,
   return vc->true;
 }
 
-VCSI_OBJECT notice_irc_conn(VCSI_CONTEXT vc, 
-			    VCSI_OBJECT x, 
-			    VCSI_OBJECT y, 
+VCSI_OBJECT notice_irc_conn(VCSI_CONTEXT vc,
+			    VCSI_OBJECT x,
+			    VCSI_OBJECT y,
 			    VCSI_OBJECT z) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
@@ -1043,7 +1043,7 @@ VCSI_OBJECT notice_irc_conn(VCSI_CONTEXT vc,
 
   if(!IRCC(x)->connected)
     error(vc,"not connected",x);
-  
+
   check_arg_type(vc,y,STRING,"irc-notice");
   check_arg_type(vc,z,STRING,"irc-notice");
 
@@ -1059,9 +1059,9 @@ VCSI_OBJECT notice_irc_conn(VCSI_CONTEXT vc,
   return vc->true;
 }
 
-VCSI_OBJECT privmsg_irc_conn(VCSI_CONTEXT vc, 
-			     VCSI_OBJECT x, 
-			     VCSI_OBJECT y, 
+VCSI_OBJECT privmsg_irc_conn(VCSI_CONTEXT vc,
+			     VCSI_OBJECT x,
+			     VCSI_OBJECT y,
 			     VCSI_OBJECT z) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
@@ -1069,19 +1069,19 @@ VCSI_OBJECT privmsg_irc_conn(VCSI_CONTEXT vc,
 
   if(!IRCC(x)->connected)
     error(vc,"not connected",x);
-  
+
   check_arg_type(vc,y,STRING,"irc-privmsg");
   check_arg_type(vc,z,STRING,"irc-privmsg");
 
 #ifdef WITH_IRC_SECURE
-  if(IRCC(x)->secure_mode && (!strcasecmp(STR(y),"chanserv") || 
+  if(IRCC(x)->secure_mode && (!strcasecmp(STR(y),"chanserv") ||
 			      !strcasecmp(STR(y),"nickserv") ||
 			      !strcasecmp(STR(y),"memoserv") ||
 			      !strcasecmp(STR(y),"statserv") ||
 			      !strcasecmp(STR(y),"seenserv") ||
 			      !strcasecmp(STR(y),"imserv") ||
 			      !strcasecmp(STR(y),"aimserv")))
-			      
+
     return error(vc,"irc security is enabled",x);
 #endif
 
@@ -1099,9 +1099,9 @@ VCSI_OBJECT privmsg_irc_conn(VCSI_CONTEXT vc,
   return vc->true;
 }
 
-VCSI_OBJECT me_irc_conn(VCSI_CONTEXT vc, 
-			VCSI_OBJECT x, 
-			VCSI_OBJECT y, 
+VCSI_OBJECT me_irc_conn(VCSI_CONTEXT vc,
+			VCSI_OBJECT x,
+			VCSI_OBJECT y,
 			VCSI_OBJECT z) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
@@ -1109,7 +1109,7 @@ VCSI_OBJECT me_irc_conn(VCSI_CONTEXT vc,
 
   if(!IRCC(x)->connected)
     error(vc,"not connected",x);
-  
+
   check_arg_type(vc,y,STRING,"irc-me");
   check_arg_type(vc,z,STRING,"irc-me");
 
@@ -1126,17 +1126,17 @@ VCSI_OBJECT me_irc_conn(VCSI_CONTEXT vc,
   return vc->true;
 }
 
-VCSI_OBJECT ctcp_irc_conn(VCSI_CONTEXT vc, 
-			  VCSI_OBJECT x, 
-			  VCSI_OBJECT y, 
+VCSI_OBJECT ctcp_irc_conn(VCSI_CONTEXT vc,
+			  VCSI_OBJECT x,
+			  VCSI_OBJECT y,
 			  VCSI_OBJECT z) {
-  
+
   if(!same_type_user_def(vc,x,irc_conn_type))
     error(vc,"objected passed to irc-ctcp is of the wrong type",x);
 
   if(!IRCC(x)->connected)
     error(vc,"not connected",x);
-  
+
   check_arg_type(vc,y,STRING,"irc-ctcp");
   check_arg_type(vc,z,STRING,"irc-ctcp");
 
@@ -1151,14 +1151,14 @@ VCSI_OBJECT ctcp_irc_conn(VCSI_CONTEXT vc,
   return vc->true;
 }
 
-VCSI_OBJECT topic_irc_conn(VCSI_CONTEXT vc, 
-			   VCSI_OBJECT args, 
+VCSI_OBJECT topic_irc_conn(VCSI_CONTEXT vc,
+			   VCSI_OBJECT args,
 			   int length) {
 
   VCSI_OBJECT x, y, z;
-  
+
   x = y = z = NULL;
-  
+
   if(length < 2 || length > 3)
     error(vc,"invalid number of arguments to irc-topic",args);
 
@@ -1172,11 +1172,11 @@ VCSI_OBJECT topic_irc_conn(VCSI_CONTEXT vc,
   y = cadr(vc,args);
   check_arg_type(vc,y,STRING,"irc-topic");
 
-  
+
   if(length == 3) {
     z = caddr(vc,args);
     check_arg_type(vc,z,STRING,"irc-topic");
-  } 
+  }
 
   /* send the command */
   memset(IRCC(x)->send_buf,0,IRCBUF);
@@ -1195,9 +1195,9 @@ VCSI_OBJECT names_irc_conn(VCSI_CONTEXT vc,
 			   VCSI_OBJECT args,
 			   int length) {
   VCSI_OBJECT x, y;
-  
+
   x = y = NULL;
-  
+
   if(length < 1 || length > 2)
     error(vc,"invalid number of arguments to irc-names",args);
 
@@ -1227,8 +1227,8 @@ VCSI_OBJECT names_irc_conn(VCSI_CONTEXT vc,
 
 }
 
-VCSI_OBJECT kick_irc_conn(VCSI_CONTEXT vc, 
-			  VCSI_OBJECT args, 
+VCSI_OBJECT kick_irc_conn(VCSI_CONTEXT vc,
+			  VCSI_OBJECT args,
 			  int length) {
   VCSI_OBJECT c, x, y, z;
 
@@ -1249,13 +1249,13 @@ VCSI_OBJECT kick_irc_conn(VCSI_CONTEXT vc,
   if(IRCC(c)->secure_mode)
     return error(vc,"irc security is enabled",x);
 #endif
-  
+
   x = cadr(vc,args); /* channel */
   check_arg_type(vc,x,STRING,"irc-kick");
 
   y = caddr(vc,args); /* nick */
   check_arg_type(vc,y,STRING,"irc-kick");
-  
+
   if(!strcasecmp(STR(y),IRCC(c)->nick))
     error(vc,"unable to kick myself",y);
 
@@ -1266,14 +1266,14 @@ VCSI_OBJECT kick_irc_conn(VCSI_CONTEXT vc,
 
   /* send the command */
   memset(IRCC(c)->send_buf,0,IRCBUF);
-  
+
   if(z)
     snprintf(IRCC(c)->send_buf,IRCBUF,"KICK %s %s :%s\n",
 	     STR(x), STR(y), STR(z));
   else
     snprintf(IRCC(c)->send_buf,IRCBUF,"KICK %s %s :%s\n",
 	     STR(x), STR(y), IRCC(c)->nick);
-  
+
   send(IRCC(c)->skt,IRCC(c)->send_buf,strlen(IRCC(c)->send_buf),0);
 
   return vc->true;
@@ -1285,7 +1285,7 @@ VCSI_OBJECT away_irc_conn(VCSI_CONTEXT vc,
   VCSI_OBJECT x, y;
 
   x = y = NULL;
-  
+
   if(length < 1 || length > 2)
     error(vc,"invalid number of arguments to irc-away",args);
 
@@ -1318,24 +1318,24 @@ VCSI_OBJECT away_irc_conn(VCSI_CONTEXT vc,
 
 }
 
-VCSI_OBJECT away_msg_irc_conn(VCSI_CONTEXT vc, 
-			      VCSI_OBJECT x) {	       
+VCSI_OBJECT away_msg_irc_conn(VCSI_CONTEXT vc,
+			      VCSI_OBJECT x) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
     error(vc,"objected passed to irc-back is of the wrong type",x);
-  
+
   return make_raw_string(vc,IRCC(x)->away_msg);
 }
 
 
-VCSI_OBJECT back_irc_conn(VCSI_CONTEXT vc, 
-			  VCSI_OBJECT x) {	       
+VCSI_OBJECT back_irc_conn(VCSI_CONTEXT vc,
+			  VCSI_OBJECT x) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
     error(vc,"objected passed to irc-back is of the wrong type",x);
-  
+
   if(!IRCC(x)->connected)
-    error(vc,"not connected",x);  
+    error(vc,"not connected",x);
 
   /* send the command */
   memset(IRCC(x)->send_buf,0,IRCBUF);
@@ -1347,16 +1347,16 @@ VCSI_OBJECT back_irc_conn(VCSI_CONTEXT vc,
   return vc->true;
 }
 
-VCSI_OBJECT ison_irc_conn(VCSI_CONTEXT vc, 
-			  VCSI_OBJECT x, 
+VCSI_OBJECT ison_irc_conn(VCSI_CONTEXT vc,
+			  VCSI_OBJECT x,
 			  VCSI_OBJECT y) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
     error(vc,"objected passed to irc-ison is of the wrong type",x);
-  
+
   if(!IRCC(x)->connected)
     error(vc,"not connected",x);
-  
+
   check_arg_type(vc,y,STRING,"irc-ison");
 
   /* send the command */
@@ -1369,8 +1369,8 @@ VCSI_OBJECT ison_irc_conn(VCSI_CONTEXT vc,
   return vc->true;
 }
 
-VCSI_OBJECT ping_reply_irc_conn(VCSI_CONTEXT vc, 
-				VCSI_OBJECT x, 
+VCSI_OBJECT ping_reply_irc_conn(VCSI_CONTEXT vc,
+				VCSI_OBJECT x,
 				VCSI_OBJECT y,
 				VCSI_OBJECT z) {
 
@@ -1380,7 +1380,7 @@ VCSI_OBJECT ping_reply_irc_conn(VCSI_CONTEXT vc,
 
   if(!IRCC(x)->connected)
     error(vc,"not connected",x);
-  
+
   check_arg_type(vc,y,STRING,"irc-ping-reply");
   check_arg_type(vc,z,STRING,"irc-ping-reply");
 
@@ -1395,18 +1395,18 @@ VCSI_OBJECT ping_reply_irc_conn(VCSI_CONTEXT vc,
   return vc->true;
 }
 
-VCSI_OBJECT version_reply_irc_conn(VCSI_CONTEXT vc, 
-				   VCSI_OBJECT x, 
+VCSI_OBJECT version_reply_irc_conn(VCSI_CONTEXT vc,
+				   VCSI_OBJECT x,
 				   VCSI_OBJECT y,
 				   VCSI_OBJECT z) {
-  
+
 
   if(!same_type_user_def(vc,x,irc_conn_type))
     error(vc,"objected passed to irc-version-reply is of the wrong type",x);
 
   if(!IRCC(x)->connected)
     error(vc,"not connected",x);
-  
+
   check_arg_type(vc,y,STRING,"irc-version-reply");
   check_arg_type(vc,z,STRING,"irc-version-reply");
 
@@ -1423,16 +1423,16 @@ VCSI_OBJECT version_reply_irc_conn(VCSI_CONTEXT vc,
 
 /* Event handlers */
 
-VCSI_OBJECT set_handler_irc_conn(VCSI_CONTEXT vc, 
-				 VCSI_OBJECT x, 
-				 VCSI_OBJECT y, 
+VCSI_OBJECT set_handler_irc_conn(VCSI_CONTEXT vc,
+				 VCSI_OBJECT x,
+				 VCSI_OBJECT y,
 				 VCSI_OBJECT z) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
     error(vc,"objected passed to irc-handler-set! is of the wrong type",x);
-  
+
   check_arg_type(vc,y,SYMBOL,"irc-handler-set!");
-  
+
   if(!strcasecmp(SNAME(y),"notice")) {
     IRCC(x)->on_notice = z;
   } else if(!strcasecmp(SNAME(y),"system")) {
@@ -1481,13 +1481,13 @@ VCSI_OBJECT set_handler_irc_conn(VCSI_CONTEXT vc,
     IRCC(x)->on_back = z;
   } else if(!strcasecmp(SNAME(y),"ison")) {
     IRCC(x)->on_ison = z;
-  } else 
+  } else
     error(vc,"invalid handler name",y);
 
   return vc->true;
 }
 
-VCSI_OBJECT handle_one_event_irc_conn(VCSI_CONTEXT vc, 
+VCSI_OBJECT handle_one_event_irc_conn(VCSI_CONTEXT vc,
 				      VCSI_OBJECT x) {
 
   IRC_EVENT irce = NULL;
@@ -1510,7 +1510,7 @@ VCSI_OBJECT handle_one_event_irc_conn(VCSI_CONTEXT vc,
   /* Wait for up to five[three] minutes, then send a forced PING and deal with the result */
   tv.tv_sec = 30; /* Thirty Seconds */
   tv.tv_usec = 0;
-    
+
   FD_ZERO(&rfds);
   FD_SET(IRCC(x)->skt, &rfds);
 
@@ -1518,11 +1518,11 @@ VCSI_OBJECT handle_one_event_irc_conn(VCSI_CONTEXT vc,
   if(!select(IRCC(x)->skt+1,&rfds,NULL,NULL,&tv)) {
     /* Nothing, send a keep-alive ping */
     memset(IRCC(x)->send_buf,0,IRCBUF);
-    
+
     snprintf(IRCC(x)->send_buf,IRCBUF,"PING %s\n",IRCC(x)->server);
     //printf("DEBUG: %s",IRCC(x)->send_buf);
     send(IRCC(x)->skt,IRCC(x)->send_buf,strlen(IRCC(x)->send_buf),0);
-    
+
   }
 
   for(i=0,c=0;i<IRCBUF;i++) {
@@ -1532,7 +1532,7 @@ VCSI_OBJECT handle_one_event_irc_conn(VCSI_CONTEXT vc,
       /* Something went wrong, maybe */
       printf("DEBUG: Something went wrong on recv...\n");
       switch(errno) {
-      case EBADF:  
+      case EBADF:
 	printf("DEBUG: The argument s is an invalid descriptor.");
 	break;
       case ECONNREFUSED:
@@ -1561,20 +1561,20 @@ VCSI_OBJECT handle_one_event_irc_conn(VCSI_CONTEXT vc,
       }
       break;
     }
-    
+
     if(c=='\n')
       break;
-    
+
     IRCC(x)->recv_buf[i] = c;
   }
   IRCC(x)->recv_buf[i]=0;
-  
+
   if(n == -1) {
     IRCC(x)->connected=0;
     irce = parse_event(NULL);
-  } else 
+  } else
     irce = parse_event(IRCC(x)->recv_buf);
-  
+
   if(irce) {
     res = handle_event(vc,IRCC(x),irce);
     FREE(irce);
@@ -1598,14 +1598,14 @@ VCSI_OBJECT event_ready_irc_conn(VCSI_CONTEXT vc,
 
   FD_ZERO(&rfds);
   FD_SET(IRCC(x)->skt, &rfds);
-   
+
   tv.tv_sec = 0;
   tv.tv_usec = 0;
   i = select(IRCC(x)->skt+1, &rfds, NULL, NULL, &tv);
-   
+
   if(i || i == -1) /* So a disconnect get triggered */
     return vc->true;
-  
+
   return vc->false;
 }
 
@@ -1624,30 +1624,30 @@ VCSI_OBJECT command_parse_irc_conn(VCSI_CONTEXT vc,
     ircc = car(vc,args);
     s = cadr(vc,args);
     chan = NULL;
-    
+
     if(!same_type_user_def(vc,ircc,irc_conn_type))
       error(vc,"objected passed to irc-command-parse is of the wrong type",
 	    ircc);
-    
+
     check_arg_type(vc,s,STRING,"irc-command-parse");
   } else if(length == 3) {
     ircc = car(vc,args);
     chan = cadr(vc,args);
     s = caddr(vc,args);
 
-    
+
     if(!same_type_user_def(vc,ircc,irc_conn_type))
       error(vc,"objected passed to irc-command-parse is of the wrong type",
 	    ircc);
 
-    check_arg_type(vc,chan,STRING,"irc-command-parse");    
+    check_arg_type(vc,chan,STRING,"irc-command-parse");
     check_arg_type(vc,s,STRING,"irc-command-parse");
-  } else 
+  } else
     return error(vc,"improper arguments to irc-command-parse",args);
 
   memset(str,0,1024);
   strncpy(str,STR(s),1023);
-  
+
   if(!strcasecmp(str,"/connect")) {
     return connect_irc_conn(vc,ircc);
   } else if(!strcasecmp(str,"/disconnect")) {
@@ -1708,7 +1708,7 @@ VCSI_OBJECT command_parse_irc_conn(VCSI_CONTEXT vc,
     return topic_irc_conn(vc,make_list(vc,3,ircc,chan,make_raw_string(vc,ln)),3);
   } else if(!strcasecmp(str,"/topic") && chan) {
     return topic_irc_conn(vc,make_list(vc,2,ircc,chan),2);
-  } else if(!strncasecmp(str,"/quit ",6) && strlen(str) > 6) {    
+  } else if(!strncasecmp(str,"/quit ",6) && strlen(str) > 6) {
     ln = str + 6;
     return quit_irc_conn(vc,ircc,make_raw_string(vc,ln));
   } else if(!strcasecmp(str,"/quit")) {
@@ -1739,8 +1739,8 @@ VCSI_OBJECT away_irc_connq(VCSI_CONTEXT vc, VCSI_OBJECT x) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
     error(vc,"objected passed to irc-away? is of the wrong type",x);
-  
-  if(IRCC(x)->away == 0) 
+
+  if(IRCC(x)->away == 0)
     return vc->false;
 
   return vc->true;
@@ -1756,7 +1756,7 @@ VCSI_OBJECT time_away_irc_conn(VCSI_CONTEXT vc, VCSI_OBJECT x) {
 
   if(IRCC(x)->away != 0)
     i = time(&clock) - IRCC(x)->away;
-  
+
   return make_long(vc,i);
 }
 
@@ -1776,15 +1776,15 @@ VCSI_OBJECT time_idle_irc_conn(VCSI_CONTEXT vc, VCSI_OBJECT x) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
     error(vc,"objected passed to irc-time-idle is of the wrong type",x);
-  
+
   i = time(&clock) - IRCC(x)->idle;
-    
+
   return make_long(vc,i);
 }
 
 ///////////////////////////////////////////////////////////////////////////
-// IRC Test Functions 
-VCSI_OBJECT irc_connq(VCSI_CONTEXT vc, 
+// IRC Test Functions
+VCSI_OBJECT irc_connq(VCSI_CONTEXT vc,
 		      VCSI_OBJECT x) {
 
   if(!same_type_user_def(vc,x,irc_conn_type))
@@ -1792,7 +1792,7 @@ VCSI_OBJECT irc_connq(VCSI_CONTEXT vc,
   return vc->true;
 }
 
-VCSI_OBJECT connected_irc_connq(VCSI_CONTEXT vc, 
+VCSI_OBJECT connected_irc_connq(VCSI_CONTEXT vc,
 				VCSI_OBJECT x) {
 
 
@@ -1805,23 +1805,23 @@ VCSI_OBJECT connected_irc_connq(VCSI_CONTEXT vc,
 }
 
 ///////////////////////////////////////////////////////////////////////////
-// Module required functions 
+// Module required functions
 void print_irc_conn(VCSI_CONTEXT vc,
-		    INFOSTD_DYN_STR res, 
+		    INFOSTD_DYN_STR res,
 		    VCSI_OBJECT obj) {
 
   infostd_dyn_str_printf(vc->res_extra,"#[irc %s:%d \"%s\" (%s)]",
 			 IRCC(obj)->server,
 			 IRCC(obj)->port,
 			 IRCC(obj)->nick,
-			 (IRCC(obj)->connected) ? 
+			 (IRCC(obj)->connected) ?
 			 "connected" : "disconnected");
-  
+
   infostd_dyn_str_strcat(res,vc->res_extra->buff);
 }
 
 void mark_irc_conn(VCSI_CONTEXT vc,
-		   VCSI_OBJECT obj, 
+		   VCSI_OBJECT obj,
 		   int flag) {
 
   /* mark all the handlers */
@@ -1872,10 +1872,10 @@ void free_irc_conn(VCSI_CONTEXT vc,
 }
 
 void module_init(VCSI_CONTEXT vc) {
-  irc_conn_type = make_user_def_type(vc, "harangue-irc", print_irc_conn, 
+  irc_conn_type = make_user_def_type(vc, "harangue-irc", print_irc_conn,
 				     mark_irc_conn, free_irc_conn);
 
-  set_int_proc(vc,"irc?",PROC1,irc_connq);  
+  set_int_proc(vc,"irc?",PROC1,irc_connq);
   set_int_proc(vc,"make-irc",PROC4,init_irc_conn);
   set_int_proc(vc,"irc-handler-set!",PROC3,set_handler_irc_conn);
   set_int_proc(vc,"irc-handle-one-event",PROC1,handle_one_event_irc_conn);
@@ -1921,7 +1921,7 @@ void module_init(VCSI_CONTEXT vc) {
 
   set_int_proc(vc,"irc-ping-reply",PROC3,ping_reply_irc_conn);
   set_int_proc(vc,"irc-version-reply",PROC3,version_reply_irc_conn);
-  
+
   /* To Do:
      oper?, mode, list, invite, info?, who, whois, whowas?, userhost
   */
